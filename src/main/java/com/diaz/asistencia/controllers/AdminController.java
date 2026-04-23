@@ -10,9 +10,11 @@ import com.diaz.asistencia.repositories.GastoExtraRepository;
 import com.diaz.asistencia.repositories.UsuarioRepository;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -22,17 +24,20 @@ public class AdminController {
     private final AlmacenRepository    almacenRepository;
     private final AsistenciaRepository asistenciaRepository;
     private final GastoExtraRepository gastoExtraRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public AdminController(
             UsuarioRepository usuarioRepository,
             AlmacenRepository almacenRepository,
             AsistenciaRepository asistenciaRepository,
-            GastoExtraRepository gastoExtraRepository
+            GastoExtraRepository gastoExtraRepository,
+            BCryptPasswordEncoder passwordEncoder
     ) {
         this.usuarioRepository    = usuarioRepository;
         this.almacenRepository    = almacenRepository;
         this.asistenciaRepository = asistenciaRepository;
         this.gastoExtraRepository = gastoExtraRepository;
+        this.passwordEncoder      = passwordEncoder;
     }
 
     // ═══════════════ USUARIOS ═══════════════════════════════════════════════
@@ -58,6 +63,7 @@ public class AdminController {
                 return ResponseEntity.badRequest().body("Ya existe un usuario con ese nombre");
 
             usuario.setActivo(true);
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
             return ResponseEntity.ok(usuarioRepository.save(usuario));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error al crear usuario: " + e.getMessage());
@@ -162,6 +168,49 @@ public class AdminController {
             almacen.setEstado(true);
             almacenRepository.save(almacen);
             return ResponseEntity.ok("Almacén reactivado");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ═══════════════ PAGOS EXTRA (ADMIN) ════════════════════════════════════
+
+    @GetMapping("/pagos-extra")
+    public ResponseEntity<List<GastoExtra>> listarPagosExtra() {
+        return ResponseEntity.ok(gastoExtraRepository.findAll());
+    }
+
+    @PostMapping("/pagos-extra")
+    public ResponseEntity<?> crearPagoExtra(@RequestBody Map<String, Object> body) {
+        try {
+            Long usuarioId = Long.valueOf(body.get("usuarioId").toString());
+            String motivo  = body.get("motivo").toString();
+            Double monto   = Double.valueOf(body.get("monto").toString());
+
+            if (motivo.isBlank()) return ResponseEntity.badRequest().body("El motivo es obligatorio");
+            if (monto <= 0)       return ResponseEntity.badRequest().body("El monto debe ser mayor a cero");
+
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            GastoExtra gasto = new GastoExtra();
+            gasto.setUsuario(usuario);
+            gasto.setMotivo(motivo);
+            gasto.setMonto(monto);
+            gasto.setFecha(java.time.LocalDate.now());
+            return ResponseEntity.ok(gastoExtraRepository.save(gasto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/pagos-extra/{id}")
+    public ResponseEntity<String> eliminarPagoExtra(@PathVariable Long id) {
+        try {
+            if (!gastoExtraRepository.existsById(id))
+                return ResponseEntity.badRequest().body("Pago extra no encontrado");
+            gastoExtraRepository.deleteById(id);
+            return ResponseEntity.ok("Pago extra eliminado");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

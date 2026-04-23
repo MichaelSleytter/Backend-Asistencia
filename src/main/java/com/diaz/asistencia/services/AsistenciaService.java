@@ -3,6 +3,7 @@ package com.diaz.asistencia.services;
 import com.diaz.asistencia.entities.*;
 import com.diaz.asistencia.repositories.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class AsistenciaService {
         this.gastoExtraRepository = gastoExtraRepository;
     }
 
+    @Transactional
     public Asistencia registrarAsistencia(String usuarioNombre, Long almacenId) {
         Usuario usuario = usuarioRepository.findByUsuario(usuarioNombre)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));

@@ -5,7 +5,7 @@ import com.diaz.asistencia.services.DashboardService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/dashboard")
+@RequestMapping("/admin/dashboard")
 public class DashboardController {
 
     private final DashboardService dashboardService;
