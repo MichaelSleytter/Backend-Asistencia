@@ -24,6 +24,7 @@ public class Usuario {
     private String rol;
 
     // Borrado lógico: false = desactivado, sigue en BD para preservar historial
+    @Column(nullable = false, columnDefinition = "boolean default true")
     @Builder.Default
     private Boolean activo = true;
 }

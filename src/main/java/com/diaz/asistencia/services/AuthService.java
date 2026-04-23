@@ -28,7 +28,7 @@ public class AuthService {
         Usuario user = usuarioRepository.findByUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no existe"));
 
-        if (!user.getActivo()) {
+        if (!Boolean.TRUE.equals(user.getActivo())) {
             throw new RuntimeException("Usuario desactivado");
         }
 
