@@ -25,7 +25,7 @@ public class SecurityConfig {
 
     public SecurityConfig(
             JwtFilter jwtFilter,
-            @Value("${app.cors.allowed-origins:http://localhost:3000,https://lustrous-tiramisu-0825a4.netlify.app}") String allowedOrigins
+            @Value("${app.cors.allowed-origins:https://astonishing-kashata-259775.netlify.app/}") String allowedOrigins
     ) {
         this.jwtFilter = jwtFilter;
         this.allowedOrigins = List.of(allowedOrigins.split(","))

@@ -28,7 +28,7 @@ APP_JWT_EXPIRATION_MS=86400000
 ## Ejecucion local
 
 ```powershell
-$env:APP_CORS_ALLOWED_ORIGINS="http://localhost:3000,https://lustrous-tiramisu-0825a4.netlify.app"
+$env:APP_CORS_ALLOWED_ORIGINS="https://astonishing-kashata-259775.netlify.app/"
 $env:APP_JWT_SECRET="una-clave-local-larga-y-segura-de-al-menos-32-bytes"
 ./mvnw.cmd spring-boot:run
 ```
